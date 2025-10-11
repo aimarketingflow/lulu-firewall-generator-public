@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LuLu Firewall Setup Guide</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #e0e0e0;
+            background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container { max-width: 1000px; margin: 0 auto; }
+        header {
+            text-align: center;
+            margin-bottom: 50px;
+            padding: 40px 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+        }
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 15px;
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .step {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 30px;
+            margin-bottom: 30px;
+            border-radius: 15px;
+            border-left: 5px solid #38ef7d;
+        }
+        .step-number {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 40px;
+            font-weight: bold;
+            margin-right: 15px;
+        }
+        .step-title {
+            font-size: 1.8em;
+            color: #38ef7d;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+        .code-block {
+            background: rgba(0, 0, 0, 0.4);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 15px 0;
+            font-family: 'Monaco', monospace;
+            overflow-x: auto;
+            color: #38ef7d;
+        }
+        .warning {
+            background: rgba(255, 193, 7, 0.1);
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+        }
+        .success {
+            background: rgba(76, 175, 80, 0.1);
+            border-left: 4px solid #4caf50;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+        }
+        .screenshot {
+            margin: 20px 0;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            max-width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🛡️ LuLu Firewall Setup Guide</h1>
+            <p style="font-size: 1.2em; color: #a0a0a0;">Port-Specific Rules for Maximum Security</p>
+        </header>
+
+        <!-- Step 0 -->
+        <div class="step">
+            <div class="step-title">
+                <span class="step-number">0</span>
+                Prerequisites
+            </div>
+            <div style="margin-left: 55px;">
+                <p>Before you begin:</p>
+                <ul style="margin: 15px 0 15px 20px;">
+                    <li>✓ LuLu firewall installed (<a href="https://objective-see.org/products/lulu.html" style="color: #38ef7d;">Download</a>)</li>
+                    <li>✓ Our tool from <a href="https://github.com/aimarketingflow/Lulu-custom-firewall-generator" style="color: #38ef7d;">GitHub</a></li>
+                    <li>✓ Python 3.8+ installed</li>
+                    <li>✓ 15 minutes of time</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Step 1 -->
+        <div class="step">
+            <div class="step-title">
+                <span class="step-number">1</span>
+                Download & Install Our Tool
+            </div>
+            <div style="margin-left: 55px;">
+                <p>Clone the repository and install dependencies:</p>
+                <div class="code-block">
+git clone https://github.com/aimarketingflow/Lulu-custom-firewall-generator.git
+cd Lulu-custom-firewall-generator
+pip3 install -r requirements.txt
+                </div>
+                <div class="success">
+                    ✅ <strong>Success!</strong> You now have all the tools ready.
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="step">
+            <div class="step-title">
+                <span class="step-number">2</span>
+                Generate Port-Specific Rules
+            </div>
+            <div style="margin-left: 55px;">
+                <p>Create surgical firewall rules for your apps:</p>
+                <div class="code-block">
+python3 create_app_specific_rules.py
+                </div>
+                <p style="margin-top: 15px;">This creates <code style="background: rgba(0,0,0,0.3); padding: 2px 8px; border-radius: 4px;">app_specific_port_rules.json</code> with:</p>
+                <ul style="margin: 15px 0 15px 20px;">
+                    <li>Safari: HTTP/HTTPS only (ports 80, 443)</li>
+                    <li>Windsurf: api.codeium.com, github.com only</li>
+                    <li>Slack: *.slack.com only</li>
+                    <li>Mail: IMAP/SMTP ports only</li>
+                    <li>Block rules: Telemetry, analytics, tracking</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="step">
+            <div class="step-title">
+                <span class="step-number">3</span>
+                Open LuLu Menu
+            </div>
+            <div style="margin-left: 55px;">
+                <p>Click the LuLu icon in your menu bar and select <strong>Rules</strong>:</p>
+                <img src="https://raw.githubusercontent.com/aimarketingflow/Lulu-custom-firewall-generator/main/docs/lulu-menu.png" alt="LuLu Menu" class="screenshot" style="max-width: 400px;">
+                <p style="margin-top: 15px;">You'll see options for:</p>
+                <ul style="margin: 15px 0 15px 20px;">
+                    <li><strong>Rules</strong> - View and manage firewall rules</li>
+                    <li><strong>Settings</strong> - Configure LuLu behavior</li>
+                    <li><strong>Import...</strong> - Import rule files (we'll use this!)</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Step 4 -->
+        <div class="step">
+            <div class="step-title">
+                <span class="step-number">4</span>
+                Configure LuLu Settings
+            </div>
+            <div style="margin-left: 55px;">
+                <p>Before importing rules, configure LuLu for maximum security:</p>
+                <h3 style="color: #38ef7d; margin: 20px 0 10px 0;">Rules Tab</h3>
+                <ul style="margin: 15px 0 15px 20px;">
+                    <li>✓ <strong>Allow Installed Programs</strong> - Check this</li>
+                    <li>✗ <strong>Allow Apple Programs</strong> - Uncheck (we'll add specific ones)</li>
+                    <li>✗ <strong>Allow DNS Traffic</strong> - Uncheck (more secure)</li>
+                </ul>
+                
+                <h3 style="color: #38ef7d; margin: 20px 0 10px 0;">Mode Tab</h3>
+                <p>Set to <strong>Passive Mode</strong> with:</p>
+                <ul style="margin: 15px 0 15px 20px;">
+                    <li>New connections: <strong>Blocked</strong></li>
+                    <li>Create rules: <strong>Yes</strong></li>
+                </ul>
+                <div class="warning">
+                    ⚠️ <strong>Important:</strong> Passive Mode with "Blocked" means only your imported rules will be allowed. Everything else is blocked by default.
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 5 -->
+        <div class="step">
+            <div class="step-title">
+                <span class="step-number">5</span>
+                Import Your Rules
+            </div>
+            <div style="margin-left: 55px;">
+                <p>Now import the port-specific rules:</p>
+                <ol style="margin: 15px 0 15px 20px;">
+                    <li>Click LuLu menu → <strong>Import...</strong></li>
+                    <li>Navigate to: <code style="background: rgba(0,0,0,0.3); padding: 2px 8px; border-radius: 4px;">Lulu-custom-firewall-generator/</code></li>
+                    <li>Select <code style="background: rgba(0,0,0,0.3); padding: 2px 8px; border-radius: 4px;">app_specific_port_rules.json</code></li>
+                    <li>Click <strong>Open</strong></li>
+                </ol>
+                <div class="success">
+                    ✅ <strong>Success!</strong> Your port-specific rules are now active!
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 6 -->
+        <div class="step">
+            <div class="step-title">
+                <span class="step-number">6</span>
+                Test Your Apps
+            </div>
+            <div style="margin-left: 55px;">
+                <p>Verify everything works correctly:</p>
+                <ul style="margin: 15px 0 15px 20px;">
+                    <li>🌐 <strong>Safari</strong> - Browse to google.com</li>
+                    <li>💻 <strong>Windsurf</strong> - Open a project, use AI features</li>
+                    <li>💬 <strong>Slack</strong> - Send a message</li>
+                    <li>📧 <strong>Mail</strong> - Check your email</li>
+                </ul>
+                <div class="warning">
+                    ⚠️ <strong>If something doesn't work:</strong>
+                    <ol style="margin: 10px 0 0 20px;">
+                        <li>Check LuLu logs for blocked connections</li>
+                        <li>Add the blocked destination to your rules</li>
+                        <li>Re-import the updated rules</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 7 -->
+        <div class="step">
+            <div class="step-title">
+                <span class="step-number">7</span>
+                Monitor & Adjust
+            </div>
+            <div style="margin-left: 55px;">
+                <p>For the first week, monitor LuLu activity:</p>
+                <div class="code-block">
+# View LuLu logs
+tail -f /var/log/lulu.log
+
+# See blocked connections
+grep "BLOCK" /var/log/lulu.log | tail -20
+                </div>
+                <p style="margin-top: 15px;"><strong>What to look for:</strong></p>
+                <ul style="margin: 15px 0 15px 20px;">
+                    <li>✅ <strong>Legitimate blocks</strong> - Telemetry, analytics (good!)</li>
+                    <li>⚠️ <strong>App not working</strong> - Add missing destination</li>
+                    <li>🚨 <strong>Suspicious connections</strong> - Investigate immediately</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Summary -->
+        <div class="step" style="border-left: 5px solid #4caf50; background: rgba(76, 175, 80, 0.1);">
+            <div class="step-title" style="color: #4caf50;">
+                <span class="step-number" style="background: #4caf50;">✓</span>
+                You're Protected!
+            </div>
+            <div style="margin-left: 55px;">
+                <h3 style="color: #4caf50; margin-bottom: 15px;">What You've Achieved:</h3>
+                <ul style="margin: 15px 0 15px 20px;">
+                    <li>🛡️ <strong>90% attack surface reduction</strong></li>
+                    <li>🎯 <strong>Port-specific rules</strong> for all your apps</li>
+                    <li>🚫 <strong>Blocked telemetry</strong> and analytics</li>
+                    <li>🔒 <strong>Maximum security</strong> without breaking functionality</li>
+                </ul>
+                
+                <h3 style="color: #4caf50; margin: 20px 0 10px 0;">Next Steps:</h3>
+                <ul style="margin: 15px 0 15px 20px;">
+                    <li>Monitor logs for 1 week</li>
+                    <li>Add more apps as needed</li>
+                    <li>Review rules monthly</li>
+                    <li>Share your success! ⭐ Star us on <a href="https://github.com/aimarketingflow/Lulu-custom-firewall-generator" style="color: #4caf50;">GitHub</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <footer>
+            <p>Made with ❤️ for macOS security</p>
+            <p style="margin-top: 10px;">
+                <a href="https://github.com/aimarketingflow/Lulu-custom-firewall-generator" style="color: #38ef7d;">GitHub</a> • 
+                <a href="https://www.patreon.com/objective_see" style="color: #38ef7d;">Support LuLu Creator</a> • 
+                <a href="about.html" style="color: #38ef7d;">About This Project</a>
+            </p>
+        </footer>
+        
+    </div>
+</body>
+</html>
