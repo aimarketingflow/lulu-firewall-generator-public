@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>macOS Security Hardening Guide</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #e0e0e0;
+            background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container { max-width: 1200px; margin: 0 auto; }
+        header {
+            text-align: center;
+            margin-bottom: 50px;
+            padding: 40px 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+        }
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 15px;
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .nav {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+        }
+        .nav a {
+            color: #38ef7d;
+            text-decoration: none;
+            margin-right: 20px;
+            padding: 5px 10px;
+            border-radius: 5px;
+            transition: background 0.3s;
+        }
+        .nav a:hover { background: rgba(56, 239, 125, 0.1); }
+        .section {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 30px;
+            margin-bottom: 30px;
+            border-radius: 15px;
+            border-left: 5px solid #38ef7d;
+        }
+        .section h2 {
+            color: #38ef7d;
+            margin-bottom: 20px;
+            font-size: 2em;
+        }
+        .section h3 {
+            color: #4caf50;
+            margin: 20px 0 10px 0;
+            font-size: 1.5em;
+        }
+        .code-block {
+            background: rgba(0, 0, 0, 0.4);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 15px 0;
+            font-family: 'Monaco', monospace;
+            overflow-x: auto;
+            color: #38ef7d;
+        }
+        .warning {
+            background: rgba(255, 193, 7, 0.1);
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+        }
+        .success {
+            background: rgba(76, 175, 80, 0.1);
+            border-left: 4px solid #4caf50;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+        }
+        .info {
+            background: rgba(33, 150, 243, 0.1);
+            border-left: 4px solid #2196f3;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+        }
+        ul, ol { margin: 15px 0 15px 30px; }
+        li { margin: 8px 0; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        th {
+            background: rgba(56, 239, 125, 0.2);
+            color: #38ef7d;
+        }
+        .checklist {
+            list-style: none;
+            margin: 15px 0;
+        }
+        .checklist li {
+            padding: 10px 0;
+            padding-left: 30px;
+            position: relative;
+        }
+        .checklist li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #38ef7d;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🛡️ macOS Security Hardening Guide</h1>
+            <p style="font-size: 1.2em; color: #a0a0a0;">Complete Guide to Securing Your Mac</p>
+        </header>
+
+        <nav class="nav">
+            <a href="#tools">Essential Tools</a>
+            <a href="#lulu-setup">LuLu Setup</a>
+            <a href="#block-rules">Block Rules</a>
+            <a href="#activity-monitor">Activity Monitor</a>
+            <a href="#adding-rules">Adding Rules</a>
+            <a href="#apple-id">Apple ID Security</a>
+            <a href="#advanced">Advanced Setup</a>
+        </nav>
+
+        <!-- Essential Tools -->
+        <div id="tools" class="section">
+            <h2>🔧 Essential Security Tools</h2>
+            
+            <h3>Required Tools</h3>
+            <table>
+                <tr>
+                    <th>Tool</th>
+                    <th>Purpose</th>
+                    <th>Cost</th>
+                    <th>Download</th>
+                </tr>
+                <tr>
+                    <td><strong>LuLu Firewall</strong></td>
+                    <td>Application-level firewall, blocks outbound connections</td>
+                    <td>Free</td>
+                    <td><a href="https://objective-see.org/products/lulu.html" style="color: #38ef7d;">Download</a></td>
+                </tr>
+                <tr>
+                    <td><strong>Activity Monitor</strong></td>
+                    <td>Monitor network activity (built-in)</td>
+                    <td>Free</td>
+                    <td>/Applications/Utilities/</td>
+                </tr>
+                <tr>
+                    <td><strong>Our Tool</strong></td>
+                    <td>Generate port-specific firewall rules</td>
+                    <td>Free</td>
+                    <td><a href="https://github.com/aimarketingflow/lulu-firewall-generator-public" style="color: #38ef7d;">GitHub</a></td>
+                </tr>
+            </table>
+
+            <h3>Optional Tools</h3>
+            <div class="info">
+                <strong>Murus Firewall</strong> (~$20) - Network-level firewall that complements LuLu<br>
+                Download: <a href="https://www.murusfirewall.com" style="color: #2196f3;">murusfirewall.com</a>
+            </div>
+        </div>
+
+        <!-- LuLu Setup -->
+        <div id="lulu-setup" class="section">
+            <h2>🛡️ LuLu Firewall Setup</h2>
+            
+            <h3>Step 1: Install LuLu</h3>
+            <ol>
+                <li>Download LuLu from Objective-See</li>
+                <li>Open the DMG file</li>
+                <li>Drag LuLu to Applications</li>
+                <li>Launch LuLu</li>
+                <li>Grant necessary permissions when prompted</li>
+            </ol>
+
+            <h3>Step 2: Configure LuLu Settings</h3>
+            <p>Click the LuLu menu bar icon → <strong>Settings</strong></p>
+
+            <h4 style="color: #4caf50; margin-top: 20px;">Rules Tab Settings</h4>
+            <div class="code-block">
+✓ Allow Installed Programs (checked)
+✗ Allow Apple Programs (UNCHECKED - we'll add specific ones)
+✗ Allow DNS Traffic (UNCHECKED - more secure)
+✗ Allow Simulator Applications (unchecked unless needed)
+            </div>
+
+            <div class="warning">
+                <strong>⚠️ Why uncheck "Allow Apple Programs"?</strong><br>
+                Many Apple processes phone home unnecessarily for telemetry, analytics, and crash reports. We'll manually allow only what you need.
+            </div>
+
+            <h4 style="color: #4caf50; margin-top: 20px;">Mode Tab Settings</h4>
+            <p><strong>Choose: Passive Mode</strong></p>
+            <div class="code-block">
+New connections should be: BLOCKED
+Rules for new connections should be created? YES
+            </div>
+
+            <div class="info">
+                <strong>What this means:</strong><br>
+                • LuLu runs silently in the background<br>
+                • All new connections are blocked by default<br>
+                • You'll be prompted to allow/block each new connection<br>
+                • Rules are saved automatically
+            </div>
+
+            <div class="success">
+                ✅ <strong>Setup Complete!</strong> LuLu is now running in Passive Mode with blocked-by-default security.
+            </div>
+        </div>
+
+        <!-- Recommended Block Rules -->
+        <div id="block-rules" class="section">
+            <h2>🚫 Recommended Block Rules</h2>
+            <p>These Apple processes should be <strong>BLOCKED</strong> for maximum privacy:</p>
+
+            <h3>Telemetry & Analytics</h3>
+            <table>
+                <tr>
+                    <th>Process</th>
+                    <th>Path</th>
+                    <th>Reason to Block</th>
+                </tr>
+                <tr>
+                    <td><strong>adprivacyd</strong></td>
+                    <td><code>/usr/libexec/adprivacyd</code></td>
+                    <td>Ad privacy daemon - sends ad tracking data</td>
+                </tr>
+                <tr>
+                    <td><strong>analyticsd</strong></td>
+                    <td><code>/usr/libexec/analyticsd</code></td>
+                    <td>Analytics collection</td>
+                </tr>
+                <tr>
+                    <td><strong>diagnosticd</strong></td>
+                    <td><code>/usr/libexec/diagnosticd</code></td>
+                    <td>Diagnostic reporting</td>
+                </tr>
+            </table>
+
+            <h3>Cloud Services (if not using iCloud)</h3>
+            <table>
+                <tr>
+                    <th>Process</th>
+                    <th>Reason to Block</th>
+                </tr>
+                <tr>
+                    <td><strong>cloudd</strong></td>
+                    <td>iCloud daemon</td>
+                </tr>
+                <tr>
+                    <td><strong>cloudpaird</strong></td>
+                    <td>iCloud pairing</td>
+                </tr>
+                <tr>
+                    <td><strong>iCloudDrive</strong></td>
+                    <td>iCloud Drive sync</td>
+                </tr>
+            </table>
+
+            <h3>How to Add Block Rules</h3>
+            <ol>
+                <li>Open LuLu → <strong>Rules</strong></li>
+                <li>Click <strong>Add Rule</strong> (+ button)</li>
+                <li>For each process:
+                    <ul>
+                        <li><strong>Process</strong>: Browse to the path above</li>
+                        <li><strong>Endpoint</strong>: <code>any address</code></li>
+                        <li><strong>Port</strong>: <code>any port</code></li>
+                        <li><strong>Action</strong>: <strong>Block</strong> (red X)</li>
+                    </ul>
+                </li>
+                <li>Click <strong>Add</strong></li>
+            </ol>
+
+            <div class="success">
+                💡 <strong>Pro Tip:</strong> Use our tool to generate these rules automatically!<br>
+                <code>python3 create_app_specific_rules.py</code>
+            </div>
+        </div>
+
+        <!-- Activity Monitor -->
+        <div id="activity-monitor" class="section">
+            <h2>📊 Activity Monitor as Network Monitor</h2>
+            <p>Activity Monitor is a free, built-in alternative to Wireshark for basic network monitoring.</p>
+
+            <h3>Step 1: Open Activity Monitor</h3>
+            <div class="code-block">
+# Via Spotlight
+Cmd + Space → "Activity Monitor"
+
+# Or via Terminal
+open -a "Activity Monitor"
+            </div>
+
+            <h3>Step 2: View Network Activity</h3>
+            <ol>
+                <li>Click the <strong>Network</strong> tab at the top</li>
+                <li>You'll see:
+                    <ul>
+                        <li><strong>Packets In/Out</strong> - Total network traffic</li>
+                        <li><strong>Data Received/Sent</strong> - Bandwidth usage per process</li>
+                    </ul>
+                </li>
+            </ol>
+
+            <h3>Step 3: Identify Suspicious Connections</h3>
+            <div class="warning">
+                <strong>Red Flags:</strong><br>
+                ❌ System processes sending large amounts of data<br>
+                ❌ Apps you're not using showing network activity<br>
+                ❌ Unknown process names<br>
+                ❌ Processes connecting when you're "offline"
+            </div>
+
+            <h3>Step 4: Get Detailed Connection Info</h3>
+            <div class="code-block">
+# See all active connections
+lsof -i -n -P
+
+# See connections for a specific process
+lsof -i -n -P | grep "process-name"
+
+# Example: Check what Safari is connecting to
+lsof -i -n -P | grep Safari
+            </div>
+        </div>
+
+        <!-- Adding Rules -->
+        <div id="adding-rules" class="section">
+            <h2>➕ Adding Rules Based on Activity Monitor</h2>
+            
+            <h3>Example Scenario</h3>
+            <p>You notice <code>trustd</code> is sending data to <code>17.253.144.10:443</code></p>
+
+            <h3>Step-by-Step Process</h3>
+            <ol>
+                <li><strong>Identify in Activity Monitor</strong>
+                    <ul>
+                        <li>Note the process name: <code>trustd</code></li>
+                        <li>Note it's sending data</li>
+                    </ul>
+                </li>
+                <li><strong>Get Connection Details</strong>
+                    <div class="code-block">
+lsof -i -n -P | grep trustd
+# Output: trustd  567  root   8u  IPv4  TCP *:*->17.253.144.10:443
+                    </div>
+                </li>
+                <li><strong>Find Process Path</strong>
+                    <div class="code-block">
+ps aux | grep trustd
+# Output: /usr/libexec/trustd
+                    </div>
+                </li>
+                <li><strong>Create LuLu Rule</strong>
+                    <ul>
+                        <li>Open LuLu → Rules → Add Rule</li>
+                        <li>Process Path: <code>/usr/libexec/trustd</code></li>
+                        <li>Endpoint: <code>17.253.144.10</code> or <code>*</code> for all</li>
+                        <li>Port: <code>443</code> or <code>*</code> for all</li>
+                        <li>Action: <strong>Block</strong></li>
+                    </ul>
+                </li>
+                <li><strong>Verify</strong>
+                    <ul>
+                        <li>Check Activity Monitor</li>
+                        <li><code>trustd</code> should show 0 bytes sent</li>
+                    </ul>
+                </li>
+            </ol>
+
+            <div class="success">
+                ✅ <strong>Rule Active!</strong> The process is now blocked from connecting.
+            </div>
+        </div>
+
+        <!-- Apple ID Security -->
+        <div id="apple-id" class="section">
+            <h2>🚫 Apple ID Security Considerations</h2>
+            
+            <h3>Why Not Using an Apple ID Improves Security</h3>
+            <table>
+                <tr>
+                    <th>Exploit Prevented</th>
+                    <th>How</th>
+                </tr>
+                <tr>
+                    <td>iCloud Sync Exploits</td>
+                    <td>No cloud data to compromise</td>
+                </tr>
+                <tr>
+                    <td>Keychain Sync Attacks</td>
+                    <td>Passwords stay local only</td>
+                </tr>
+                <tr>
+                    <td>Find My Mac Tracking</td>
+                    <td>Can't be tracked remotely</td>
+                </tr>
+                <tr>
+                    <td>Remote Wipe Attacks</td>
+                    <td>Can't be remotely wiped</td>
+                </tr>
+                <tr>
+                    <td>Account Takeover</td>
+                    <td>No Apple account to hijack</td>
+                </tr>
+            </table>
+
+            <h3>Services You Lose</h3>
+            <div class="warning">
+                ❌ iCloud Drive<br>
+                ❌ iCloud Photos<br>
+                ❌ iCloud Keychain<br>
+                ❌ Find My Mac<br>
+                ❌ Handoff/Continuity<br>
+                ❌ iMessage (on Mac)<br>
+                ❌ FaceTime (on Mac)
+            </div>
+
+            <h3>Alternative Services</h3>
+            <ul>
+                <li><strong>Cloud Storage</strong>: Dropbox, Google Drive, Nextcloud (self-hosted)</li>
+                <li><strong>Password Manager</strong>: 1Password, Bitwarden, KeePassXC (local)</li>
+                <li><strong>Photos</strong>: Local storage + external backup</li>
+                <li><strong>Messaging</strong>: Signal, Telegram, WhatsApp</li>
+                <li><strong>Video Calls</strong>: Zoom, Google Meet, Signal</li>
+            </ul>
+        </div>
+
+        <!-- Advanced Setup -->
+        <div id="advanced" class="section">
+            <h2>🔥 Advanced: LuLu + Murus Combined</h2>
+            
+            <h3>Why Use Both?</h3>
+            <table>
+                <tr>
+                    <th>Firewall</th>
+                    <th>Level</th>
+                    <th>Purpose</th>
+                </tr>
+                <tr>
+                    <td><strong>LuLu</strong></td>
+                    <td>Application</td>
+                    <td>Controls which apps can connect</td>
+                </tr>
+                <tr>
+                    <td><strong>Murus</strong></td>
+                    <td>Network</td>
+                    <td>Controls network traffic by IP/port</td>
+                </tr>
+            </table>
+
+            <div class="success">
+                <strong>Together:</strong> Double layer of protection. Even if an app bypasses LuLu, Murus catches it.
+            </div>
+
+            <h3>Security Checklist</h3>
+            <ul class="checklist">
+                <li>Install LuLu firewall</li>
+                <li>Configure Passive Mode (Blocked by default)</li>
+                <li>Uncheck "Allow Apple Programs"</li>
+                <li>Add recommended block rules</li>
+                <li>Generate port-specific rules with our tool</li>
+                <li>Consider not using Apple ID</li>
+                <li>Block telemetry processes</li>
+                <li>Check Activity Monitor daily</li>
+                <li>Review LuLu logs weekly</li>
+                <li>Audit rules monthly</li>
+            </ul>
+        </div>
+
+        <!-- Footer -->
+        <footer style="text-align: center; padding: 40px 20px; color: #a0a0a0; margin-top: 50px;">
+            <p>Made with ❤️ for macOS security</p>
+            <p style="margin-top: 10px;">
+                <a href="https://github.com/aimarketingflow/lulu-firewall-generator-public" style="color: #38ef7d;">GitHub</a> • 
+                <a href="https://www.patreon.com/objective_see" style="color: #38ef7d;">Support LuLu Creator</a> • 
+                <a href="setup-guide.html" style="color: #38ef7d;">Setup Guide</a>
+            </p>
+        </footer>
+        
+    </div>
+</body>
+</html>
