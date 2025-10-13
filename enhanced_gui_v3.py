@@ -522,7 +522,7 @@ class EnhancedFirewallGUI(QMainWindow):
         button_layout = QHBoxLayout()
         
         self.load_sysdiag_btn = QPushButton("📁 Load Sysdiag Folder")
-        self.load_sysdiag_btn.clicked.connect(self.load_sysdiag_folder)
+        self.load_sysdiag_btn.clicked.connect(lambda: self.load_diagnostics())
         self.load_sysdiag_btn.setMinimumHeight(40)
         button_layout.addWidget(self.load_sysdiag_btn)
         
@@ -618,6 +618,10 @@ class EnhancedFirewallGUI(QMainWindow):
         self.app_scroll.setVisible(not is_auto)
         self.quick_select_widget.setVisible(not is_auto)
         
+        # Enable generate button if auto mode and diagnostics loaded
+        if is_auto and hasattr(self, 'detected_processes') and self.detected_processes:
+            self.generate_btn.setEnabled(True)
+        
         # Update status
         if is_auto:
             self.status_label.setText("Auto mode: Will use all apps from diagnostics")
@@ -668,27 +672,29 @@ class EnhancedFirewallGUI(QMainWindow):
     
     def load_diagnostics(self):
         """Load spindump file or sysdiag folder"""
-        # Ask user what type of diagnostic to load
-        msg = QMessageBox()
-        msg.setWindowTitle("Load Diagnostics")
-        msg.setText("What type of diagnostic data would you like to load?")
-        msg.setInformativeText("Spindump: Single file with process info\nSysdiag: Folder with comprehensive system diagnostics")
-        spindump_btn = msg.addButton("📄 Spindump File", QMessageBox.ButtonRole.ActionRole)
-        sysdiag_btn = msg.addButton("📁 Sysdiag Folder", QMessageBox.ButtonRole.ActionRole)
-        msg.addButton(QMessageBox.StandardButton.Cancel)
-        msg.exec()
-        
-        if msg.clickedButton() == spindump_btn:
-            self.load_spindump_file()
-        elif msg.clickedButton() == sysdiag_btn:
-            self.load_sysdiag_folder()
-    
-    def load_spindump_file(self):
-        """Load spindump file"""
-        file_path, _ = QFileDialog.getOpenFileName(
-            self, "Select Spindump File", "", "Text Files (*.txt);;All Files (*)"
+        print("🔍 Opening folder selection dialog...")
+        # Try folder first (most common use case)
+        folder_path = QFileDialog.getExistingDirectory(
+            self, "Select Sysdiag Folder (or Cancel to select Spindump file)", 
+            str(Path.home() / "Desktop"),
+            QFileDialog.Option.ShowDirsOnly
         )
+        print(f"📁 Selected folder: {folder_path if folder_path else 'None (cancelled)'}")
         
+        if folder_path:
+            self.load_sysdiag_folder_path(folder_path)
+        else:
+            # If cancelled, offer file selection
+            file_path, _ = QFileDialog.getOpenFileName(
+                self, "Select Spindump File", 
+                str(Path.home() / "Desktop"),
+                "Text Files (*.txt);;All Files (*)"
+            )
+            if file_path:
+                self.load_spindump_file_path(file_path)
+    
+    def load_spindump_file_path(self, file_path):
+        """Load spindump file from path"""
         if file_path:
             try:
                 self.progress.setVisible(True)
@@ -751,13 +757,8 @@ class EnhancedFirewallGUI(QMainWindow):
         if self.auto_mode_radio.isChecked():
             self.select_all()
     
-    def load_sysdiag_folder(self):
-        """Load sysdiag folder for comprehensive analysis"""
-        folder_path = QFileDialog.getExistingDirectory(
-            self, "Select Sysdiag Folder", "",
-            QFileDialog.Option.ShowDirsOnly
-        )
-        
+    def load_sysdiag_folder_path(self, folder_path):
+        """Load sysdiag folder from path"""
         if folder_path:
             try:
                 self.progress.setVisible(True)
