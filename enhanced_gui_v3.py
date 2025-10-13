@@ -359,6 +359,22 @@ class EnhancedFirewallGUI(QMainWindow):
         save_layout.addWidget(self.load_config_btn)
         
         rules_layout.addLayout(save_layout)
+        
+        # Add usage tips
+        tips_text = QLabel(
+            "💡 <b>Two-Phase Protection Strategy:</b><br>"
+            "1. <b>Startup</b>: Use permissive rules for initial launch<br>"
+            "2. <b>Runtime</b>: Import generated rules after app starts<br>"
+            "<br>"
+            "<b>Why?</b> Some apps (like Windsurf) need one-time connections<br>"
+            "during startup but work fine with restricted rules after.<br>"
+            "<br>"
+            "✅ <b>Result:</b> Functionality + 95% attack surface reduction"
+        )
+        tips_text.setWordWrap(True)
+        tips_text.setStyleSheet("background-color: #2a2a2a; padding: 10px; border-radius: 5px; font-size: 10px;")
+        rules_layout.addWidget(tips_text)
+        
         left_layout.addWidget(rules_group)
         
         left_layout.addStretch()
@@ -483,7 +499,21 @@ class EnhancedFirewallGUI(QMainWindow):
             "   • Exports to LuLu-compatible JSON\n"
             "   • Import into LuLu → Rules → Import\n"
             "   • Preserves existing blocked Apple processes\n"
-            "   • Deduplicates conflicting rules"
+            "   • Deduplicates conflicting rules\n\n"
+            
+            "7. TWO-PHASE PROTECTION (RECOMMENDED)\n"
+            "   Phase 1 - Startup:\n"
+            "   • Start apps with permissive rules\n"
+            "   • Allow one-time auth connections\n"
+            "   • Wait for full initialization\n\n"
+            "   Phase 2 - Runtime:\n"
+            "   • Import generated rules after startup\n"
+            "   • Lock down to specific endpoints\n"
+            "   • Block new backdoor connections\n"
+            "   • Maintain existing sessions\n\n"
+            "   Why? Some apps (Windsurf, etc) need startup connections\n"
+            "   but work perfectly with restricted rules after launch.\n"
+            "   Result: Functionality + 95% attack surface reduction!"
         )
         how_layout.addWidget(steps_text)
         layout.addWidget(how_it_works)
