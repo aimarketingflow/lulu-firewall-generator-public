@@ -93,43 +93,51 @@ def deduplicate_rules(rules_list):
     Remove duplicate rules based on endpoint+port combination
     Priority:
     1. For *:* - prefer BLOCK over ALLOW (default deny)
-    2. For specific endpoints - prefer non-wildcard over wildcard
+    2. Wildcard port (*) supersedes specific ports (443, 80, etc)
     3. For same endpoint+port - prefer newer rule
     """
-    seen = {}
+    # First pass: group by endpoint address
+    by_endpoint = {}
+    for rule in rules_list:
+        addr = rule['endpointAddr']
+        if addr not in by_endpoint:
+            by_endpoint[addr] = []
+        by_endpoint[addr].append(rule)
+    
     deduped = []
     
-    for rule in rules_list:
-        key = f"{rule['endpointAddr']}:{rule['endpointPort']}"
+    for addr, rules in by_endpoint.items():
+        # Check if we have a wildcard port for this endpoint
+        wildcard_port_rule = None
+        specific_port_rules = []
         
-        if key not in seen:
-            seen[key] = rule
-            deduped.append(rule)
+        for rule in rules:
+            if rule['endpointPort'] == '*':
+                # Keep wildcard port rule
+                if not wildcard_port_rule:
+                    wildcard_port_rule = rule
+                elif rule['action'] == '0' and wildcard_port_rule['action'] == '1':
+                    # Prefer BLOCK over ALLOW for wildcards
+                    wildcard_port_rule = rule
+            else:
+                specific_port_rules.append(rule)
+        
+        # If we have wildcard port, only use that (ignore specific ports)
+        if wildcard_port_rule:
+            deduped.append(wildcard_port_rule)
         else:
-            # If we've seen this endpoint+port before, decide which to keep
-            existing = seen[key]
-            
-            # Special case: For *:* prefer BLOCK (action=0 in inverted) over ALLOW (action=1 in inverted)
-            # NOTE: LuLu displays actions inverted, so 0=BLOCK, 1=ALLOW in our JSON
-            if key == "*:*":
-                if rule['action'] == '0' and existing['action'] == '1':
-                    # Replace ALLOW with BLOCK for wildcards
-                    deduped.remove(existing)
+            # Otherwise, dedupe specific ports
+            seen_ports = {}
+            for rule in specific_port_rules:
+                port = rule['endpointPort']
+                if port not in seen_ports:
+                    seen_ports[port] = rule
                     deduped.append(rule)
-                    seen[key] = rule
-                # Otherwise keep existing (if both BLOCK or existing is already BLOCK)
-            # Prefer non-wildcard over wildcard
-            elif rule['endpointAddr'] != '*' and existing['endpointAddr'] == '*':
-                # Replace wildcard with specific
-                deduped.remove(existing)
-                deduped.append(rule)
-                seen[key] = rule
-            elif rule['endpointPort'] != '*' and existing['endpointPort'] == '*':
-                # Replace wildcard port with specific port
-                deduped.remove(existing)
-                deduped.append(rule)
-                seen[key] = rule
-            # Otherwise keep the first one (existing)
+                elif rule['action'] == '0' and seen_ports[port]['action'] == '1':
+                    # Prefer BLOCK over ALLOW
+                    deduped.remove(seen_ports[port])
+                    deduped.append(rule)
+                    seen_ports[port] = rule
     
     return deduped
 
@@ -182,10 +190,12 @@ def enhance_rules_with_port_specific(existing_rules, sysdiag_data):
             "type": "3",  # Bundle type
             "endpoints": [
                 ("*", "*", False, "0"),  # Block everything by default (MUST BE FIRST) - using 0 because LuLu inverts
-                ("*.github.com", "443", True, "1"),  # Then allow exceptions - using 1 because LuLu inverts
-                ("*.githubusercontent.com", "443", True, "1"),
+                ("*.github.com", "*", True, "1"),  # GitHub ALL PORTS - using 1 because LuLu inverts
+                ("*.githubusercontent.com", "*", True, "1"),  # GitHub raw content ALL PORTS
                 ("api.codeium.com", "443", False, "1"),
-                ("*.googleusercontent.com", "443", True, "1")
+                ("inference.codeium.com", "443", False, "1"),  # AI inference
+                ("*.googleusercontent.com", "443", True, "1"),
+                ("*.windsurf.com", "*", True, "1")  # Windsurf ALL PORTS
             ],
             "also_update": [
                 "com.exafunction.windsurf.helper",  # Windsurf Helper
@@ -388,6 +398,20 @@ def enhance_rules_with_port_specific(existing_rules, sysdiag_data):
         print(f"     Added wildcard BLOCK to {apps_with_default_deny} apps")
     print()
     
+    # FINAL DEDUPLICATION PASS - Remove any remaining duplicates
+    print("  🧹 Final deduplication pass...")
+    total_removed = 0
+    for app_key in enhanced_rules.keys():
+        before = len(enhanced_rules[app_key])
+        enhanced_rules[app_key] = deduplicate_rules(enhanced_rules[app_key])
+        after = len(enhanced_rules[app_key])
+        if before != after:
+            total_removed += (before - after)
+    
+    if total_removed > 0:
+        print(f"     Removed {total_removed} final duplicates")
+    print()
+    
     return enhanced_rules
 
 def main():
@@ -396,9 +420,9 @@ def main():
     print()
     
     # Paths (update these to match your system)
-    existing_rules_path = "rules-101225.json"  # Your existing LuLu rules export
+    existing_rules_path = "/Users/meep/Documents/_ToInvestigate-Offline-Attacks·/ExistingLuluRulesforOps/rules-101225.json"
     sysdiag_rules_path = "sysdiag_lulu_rules.json"
-    output_path = "enhanced_lulu_rules-FINAL-v2.json"
+    output_path = "enhanced_lulu_rules-v9-DEDUPED.json"
     
     print("📂 Loading existing rules...")
     existing_rules = load_existing_rules(existing_rules_path)
@@ -409,7 +433,18 @@ def main():
     app_configs = load_app_configs("all_apps_config.json")
     if app_configs:
         print(f"   Found {len(app_configs)} active apps")
-    else:
+    
+    # Also try auto-discovered rules
+    auto_configs = load_app_configs("auto_discovered_rules.json")
+    if auto_configs:
+        print(f"   Found {len(auto_configs)} auto-discovered apps")
+        # Merge with app_configs
+        if app_configs:
+            app_configs.update(auto_configs)
+        else:
+            app_configs = auto_configs
+    
+    if not app_configs:
         print("   No app configs found, using manual list")
     print()
     

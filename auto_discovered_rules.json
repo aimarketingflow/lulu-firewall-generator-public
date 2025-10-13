@@ -1,0 +1,78 @@
+{
+  "com.spotify": {
+    "name": "Spotify",
+    "path": "/Applications/Spotify.app",
+    "type": "3",
+    "endpoints": [
+      [
+        "*",
+        "*",
+        false,
+        "0"
+      ],
+      [
+        "*.spotify.com",
+        "443",
+        true,
+        "1"
+      ]
+    ]
+  },
+  "com.windsurf": {
+    "name": "Windsurf",
+    "path": "/Applications/Windsurf.app",
+    "type": "3",
+    "endpoints": [
+      [
+        "*",
+        "*",
+        false,
+        "0"
+      ],
+      [
+        "*.codeium.com",
+        "443",
+        true,
+        "1"
+      ],
+      [
+        "*.windsurf.com",
+        "443",
+        true,
+        "1"
+      ]
+    ]
+  },
+  "com.language_server_": {
+    "name": "language_server_",
+    "path": "/Applications/language_server_.app",
+    "type": "3",
+    "endpoints": [
+      [
+        "*",
+        "*",
+        false,
+        "0"
+      ]
+    ]
+  },
+  "com.helper": {
+    "name": "Helper",
+    "path": "/Applications/Helper.app",
+    "type": "3",
+    "endpoints": [
+      [
+        "*",
+        "*",
+        false,
+        "0"
+      ],
+      [
+        "*.apple.com",
+        "443",
+        true,
+        "1"
+      ]
+    ]
+  }
+}

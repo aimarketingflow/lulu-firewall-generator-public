@@ -1,0 +1,155 @@
+{
+  "com.codeium.windsurf": [
+    {
+      "key": "com.codeium.windsurf",
+      "uuid": "3598986D-D00B-4145-BF16-00517DDDF99D",
+      "path": "/Applications/Windsurf.app/Contents/MacOS/Windsurf",
+      "name": "Windsurf",
+      "endpointAddr": "*.github.com",
+      "endpointPort": "443",
+      "creation": "2025-10-12T20:01:47-07:00",
+      "isEndpointAddrRegex": "1",
+      "type": "1",
+      "scope": "0",
+      "action": "0"
+    },
+    {
+      "key": "com.codeium.windsurf",
+      "uuid": "524C6D2D-C4A6-49F4-A9CA-29B6D770A5FD",
+      "path": "/Applications/Windsurf.app/Contents/MacOS/Windsurf",
+      "name": "Windsurf",
+      "endpointAddr": "*.githubusercontent.com",
+      "endpointPort": "443",
+      "creation": "2025-10-12T20:01:47-07:00",
+      "isEndpointAddrRegex": "1",
+      "type": "1",
+      "scope": "0",
+      "action": "0"
+    },
+    {
+      "key": "com.codeium.windsurf",
+      "uuid": "261B868E-DCC3-436B-AEF8-3E2C66589862",
+      "path": "/Applications/Windsurf.app/Contents/MacOS/Windsurf",
+      "name": "Windsurf",
+      "endpointAddr": "api.codeium.com",
+      "endpointPort": "443",
+      "creation": "2025-10-12T20:01:47-07:00",
+      "isEndpointAddrRegex": "0",
+      "type": "1",
+      "scope": "0",
+      "action": "0"
+    },
+    {
+      "key": "com.codeium.windsurf",
+      "uuid": "11A5BFD5-FB50-45D2-829C-96D093C4BF89",
+      "path": "/Applications/Windsurf.app/Contents/MacOS/Windsurf",
+      "name": "Windsurf",
+      "endpointAddr": "*.googleusercontent.com",
+      "endpointPort": "443",
+      "creation": "2025-10-12T20:01:47-07:00",
+      "isEndpointAddrRegex": "1",
+      "type": "1",
+      "scope": "0",
+      "action": "0"
+    }
+  ],
+  "com.apple.Safari": [
+    {
+      "key": "com.apple.Safari",
+      "uuid": "DBE63B3D-F93D-40DA-81DD-B665403363E3",
+      "path": "/Applications/Safari.app/Contents/MacOS/Safari",
+      "name": "Safari",
+      "endpointAddr": "*",
+      "endpointPort": "443",
+      "creation": "2025-10-12T20:01:47-07:00",
+      "isEndpointAddrRegex": "0",
+      "type": "1",
+      "scope": "0",
+      "action": "0"
+    },
+    {
+      "key": "com.apple.Safari",
+      "uuid": "2EFF1809-2DD1-4EF7-A36D-767ABE628373",
+      "path": "/Applications/Safari.app/Contents/MacOS/Safari",
+      "name": "Safari",
+      "endpointAddr": "*",
+      "endpointPort": "80",
+      "creation": "2025-10-12T20:01:47-07:00",
+      "isEndpointAddrRegex": "0",
+      "type": "1",
+      "scope": "0",
+      "action": "0"
+    }
+  ],
+  "com.apple.appstored": [
+    {
+      "key": "com.apple.appstored",
+      "uuid": "16CA5CEA-ECE6-4B5E-9736-39168C71E912",
+      "path": "/System/Library/PrivateFrameworks/AppStoreDaemon.framework/Support/appstored",
+      "name": "appstored",
+      "endpointAddr": "*.aaplimg.com",
+      "endpointPort": "443",
+      "creation": "2025-10-12T20:01:47-07:00",
+      "isEndpointAddrRegex": "1",
+      "type": "1",
+      "scope": "0",
+      "action": "0"
+    }
+  ],
+  "BLOCK_Cox_ISP": [
+    {
+      "key": "BLOCK_Cox_ISP",
+      "uuid": "AF658142-775A-439F-B55F-1338570103A2",
+      "path": "*",
+      "name": "Block Cox ISP Tracking",
+      "endpointAddr": "*.cox.net",
+      "endpointPort": "443",
+      "creation": "2025-10-12T20:01:47-07:00",
+      "isEndpointAddrRegex": "1",
+      "type": "1",
+      "scope": "0",
+      "action": "1"
+    }
+  ],
+  "BLOCK_Apple_Telemetry": [
+    {
+      "key": "BLOCK_Apple_Telemetry",
+      "uuid": "FC46AA1F-E7E1-40B6-ABB9-8C4931A9C5C6",
+      "path": "/usr/libexec/adprivacyd",
+      "name": "adprivacyd",
+      "endpointAddr": "*",
+      "endpointPort": "*",
+      "creation": "2025-10-12T20:01:47-07:00",
+      "isEndpointAddrRegex": "0",
+      "type": "1",
+      "scope": "0",
+      "action": "1"
+    },
+    {
+      "key": "BLOCK_Apple_Telemetry",
+      "uuid": "52C4D1DF-F9A4-4F63-A085-4A0B5499A4C1",
+      "path": "/usr/libexec/analyticsd",
+      "name": "analyticsd",
+      "endpointAddr": "*",
+      "endpointPort": "*",
+      "creation": "2025-10-12T20:01:47-07:00",
+      "isEndpointAddrRegex": "0",
+      "type": "1",
+      "scope": "0",
+      "action": "1"
+    },
+    {
+      "key": "BLOCK_Apple_Telemetry",
+      "uuid": "05D92E31-0EB9-44A3-8B76-50B304F49F69",
+      "path": "/usr/libexec/diagnosticd",
+      "name": "diagnosticd",
+      "endpointAddr": "*",
+      "endpointPort": "*",
+      "creation": "2025-10-12T20:01:47-07:00",
+      "isEndpointAddrRegex": "0",
+      "type": "1",
+      "scope": "0",
+      "action": "1"
+    }
+  ]
+}

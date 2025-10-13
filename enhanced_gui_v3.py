@@ -689,6 +689,38 @@ class EnhancedFirewallGUI(QMainWindow):
                 self.progress.setVisible(False)
                 QMessageBox.critical(self, "Error", f"Failed to load diagnostics: {e}")
     
+    def populate_apps_from_diagnostics(self):
+        """Populate app list from loaded diagnostics data"""
+        if not hasattr(self, 'detected_processes') or not self.detected_processes:
+            return
+        
+        # Extract unique app names from detected processes
+        app_names = set()
+        for proc in self.detected_processes:
+            # Get app name from path
+            if 'path' in proc:
+                path = proc['path']
+                if '.app' in path:
+                    # Extract app name from path like /Applications/Windsurf.app/...
+                    app_name = path.split('.app')[0].split('/')[-1]
+                    app_names.add(app_name)
+        
+        # Update installed_apps dict
+        self.installed_apps = {}
+        for app_name in app_names:
+            self.installed_apps[app_name] = {
+                'name': app_name,
+                'bundle_id': f'com.{app_name.lower().replace(" ", ".")}',
+                'path': f'/Applications/{app_name}.app'
+            }
+        
+        # Update checkboxes
+        self.update_app_checkboxes()
+        
+        # If auto mode, select all
+        if self.auto_mode_radio.isChecked():
+            self.select_all()
+    
     def load_sysdiag_folder(self):
         """Load sysdiag folder for comprehensive analysis"""
         folder_path = QFileDialog.getExistingDirectory(
