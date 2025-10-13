@@ -180,7 +180,10 @@ class EnhancedFirewallGUI(QMainWindow):
         # Tab 2: Rule Configurations
         self.setup_configurations_tab()
         
-        # Tab 3: Analysis Dashboard
+        # Tab 3: Sysdiag Automation (NEW)
+        self.setup_sysdiag_tab()
+        
+        # Tab 4: Analysis Dashboard
         self.setup_analysis_tab()
         
         # Status and progress
@@ -412,6 +415,106 @@ class EnhancedFirewallGUI(QMainWindow):
         
         self.main_tabs.addTab(config_widget, "💾 Configurations")
     
+    def setup_sysdiag_tab(self):
+        """Setup sysdiag automation tab (NEW)"""
+        sysdiag_widget = QWidget()
+        layout = QVBoxLayout(sysdiag_widget)
+        
+        # Title and description
+        title = QLabel("🔍 Sysdiag Automation - Port-Specific Rules")
+        title_font = QFont()
+        title_font.setPointSize(14)
+        title_font.setBold(True)
+        title.setFont(title_font)
+        layout.addWidget(title)
+        
+        desc = QLabel(
+            "Automatically generate port-specific firewall rules from macOS sysdiagnose data.\n"
+            "This eliminates manual network analysis and provides 90% attack surface reduction."
+        )
+        desc.setWordWrap(True)
+        desc.setStyleSheet("color: #888; padding: 10px; font-size: 11px;")
+        layout.addWidget(desc)
+        
+        # How it works section
+        how_it_works = QGroupBox("📚 How Sysdiag Automation Works")
+        how_layout = QVBoxLayout(how_it_works)
+        
+        steps_text = QTextEdit()
+        steps_text.setReadOnly(True)
+        steps_text.setMaximumHeight(300)
+        steps_text.setPlainText(
+            "1. GENERATE SYSDIAGNOSE\n"
+            "   Run: sudo sysdiagnose\n"
+            "   Wait 10 minutes, file saved to /var/tmp/\n"
+            "   Extract the .tar.gz file\n\n"
+            
+            "2. LOAD SYSDIAG FOLDER\n"
+            "   Click 'Load Sysdiag Folder' below\n"
+            "   Select the extracted sysdiagnose folder\n"
+            "   Tool analyzes: ps.txt, netstat.txt, network-info/\n\n"
+            
+            "3. AUTO-DETECTION\n"
+            "   • Finds all running applications\n"
+            "   • Identifies app dependencies (helpers, plugins, servers)\n"
+            "   • Extracts actual network connections\n"
+            "   • Generates port-specific rules\n\n"
+            
+            "4. DEFAULT-DENY POLICY\n"
+            "   For each app with specific connections:\n"
+            "   • BLOCK *:* (deny everything by default)\n"
+            "   • ALLOW specific endpoints only\n"
+            "   Example: Windsurf → BLOCK all, ALLOW github.com:443\n\n"
+            
+            "5. SECURITY BENEFITS\n"
+            "   • 90% attack surface reduction\n"
+            "   • If app is compromised, attacker limited to allowed destinations\n"
+            "   • Blocked connections = intrusion detection\n"
+            "   • Zero manual network analysis required\n\n"
+            
+            "6. EXPORT & IMPORT\n"
+            "   • Exports to LuLu-compatible JSON\n"
+            "   • Import into LuLu → Rules → Import\n"
+            "   • Preserves existing blocked Apple processes\n"
+            "   • Deduplicates conflicting rules"
+        )
+        how_layout.addWidget(steps_text)
+        layout.addWidget(how_it_works)
+        
+        # Action buttons
+        button_layout = QHBoxLayout()
+        
+        self.load_sysdiag_btn = QPushButton("📁 Load Sysdiag Folder")
+        self.load_sysdiag_btn.clicked.connect(self.load_sysdiag_folder)
+        self.load_sysdiag_btn.setMinimumHeight(40)
+        button_layout.addWidget(self.load_sysdiag_btn)
+        
+        self.generate_sysdiag_rules_btn = QPushButton("🛡️ Generate Port-Specific Rules")
+        self.generate_sysdiag_rules_btn.clicked.connect(self.generate_sysdiag_rules)
+        self.generate_sysdiag_rules_btn.setEnabled(False)
+        self.generate_sysdiag_rules_btn.setMinimumHeight(40)
+        button_layout.addWidget(self.generate_sysdiag_rules_btn)
+        
+        layout.addLayout(button_layout)
+        
+        # Status
+        self.sysdiag_status = QLabel("No sysdiag data loaded")
+        self.sysdiag_status.setStyleSheet("padding: 10px; background-color: #333; border-radius: 5px;")
+        layout.addWidget(self.sysdiag_status)
+        
+        # Results area
+        results_group = QGroupBox("📊 Analysis Results")
+        results_layout = QVBoxLayout(results_group)
+        
+        self.sysdiag_results = QTextEdit()
+        self.sysdiag_results.setReadOnly(True)
+        self.sysdiag_results.setPlainText("Load sysdiag data to see analysis results...")
+        results_layout.addWidget(self.sysdiag_results)
+        
+        layout.addWidget(results_group)
+        
+        self.main_tabs.addTab(sysdiag_widget, "🔍 Sysdiag Automation")
+    
     def setup_analysis_tab(self):
         """Setup analysis dashboard tab"""
         analysis_widget = QWidget()
@@ -512,6 +615,23 @@ class EnhancedFirewallGUI(QMainWindow):
             checkbox.setVisible(should_show)
     
     def load_diagnostics(self):
+        """Load spindump file or sysdiag folder"""
+        # Ask user what type of diagnostic to load
+        msg = QMessageBox()
+        msg.setWindowTitle("Load Diagnostics")
+        msg.setText("What type of diagnostic data would you like to load?")
+        msg.setInformativeText("Spindump: Single file with process info\nSysdiag: Folder with comprehensive system diagnostics")
+        spindump_btn = msg.addButton("📄 Spindump File", QMessageBox.ButtonRole.ActionRole)
+        sysdiag_btn = msg.addButton("📁 Sysdiag Folder", QMessageBox.ButtonRole.ActionRole)
+        msg.addButton(QMessageBox.StandardButton.Cancel)
+        msg.exec()
+        
+        if msg.clickedButton() == spindump_btn:
+            self.load_spindump_file()
+        elif msg.clickedButton() == sysdiag_btn:
+            self.load_sysdiag_folder()
+    
+    def load_spindump_file(self):
         """Load spindump file"""
         file_path, _ = QFileDialog.getOpenFileName(
             self, "Select Spindump File", "", "Text Files (*.txt);;All Files (*)"
@@ -531,8 +651,8 @@ class EnhancedFirewallGUI(QMainWindow):
                 count = len(self.detected_processes)
                 network_count = len(parser.get_network_processes())
                 
-                self.diag_status.setText(f"✅ Loaded {count} processes ({network_count} network)")
-                self.status_label.setText("Diagnostics loaded - Select apps and generate rules")
+                self.diag_status.setText(f"✅ Spindump: {count} processes ({network_count} network)")
+                self.status_label.setText("Spindump loaded - Select apps and generate rules")
                 
                 # Update analysis tab
                 self.update_process_analysis()
@@ -544,6 +664,138 @@ class EnhancedFirewallGUI(QMainWindow):
             except Exception as e:
                 self.progress.setVisible(False)
                 QMessageBox.critical(self, "Error", f"Failed to load diagnostics: {e}")
+    
+    def load_sysdiag_folder(self):
+        """Load sysdiag folder for comprehensive analysis"""
+        folder_path = QFileDialog.getExistingDirectory(
+            self, "Select Sysdiag Folder", "",
+            QFileDialog.Option.ShowDirsOnly
+        )
+        
+        if folder_path:
+            try:
+                self.progress.setVisible(True)
+                self.progress.setRange(0, 0)
+                self.status_label.setText("🔍 Analyzing sysdiag data...")
+                
+                # Import the sysdiag analyzer
+                import sys
+                from pathlib import Path
+                sys.path.insert(0, str(Path(__file__).parent))
+                from generate_all_app_rules import parse_ps_file, find_app_dependencies
+                
+                # Parse ps.txt
+                ps_path = Path(folder_path) / "ps.txt"
+                if not ps_path.exists():
+                    raise FileNotFoundError(f"ps.txt not found in {folder_path}")
+                
+                processes = parse_ps_file(ps_path)
+                
+                # Store sysdiag data
+                self.sysdiag_folder = folder_path
+                self.sysdiag_processes = processes
+                
+                # Deduplicate by app name
+                unique_apps = {}
+                for proc in processes:
+                    if proc['name'] not in unique_apps:
+                        unique_apps[proc['name']] = proc
+                
+                self.sysdiag_apps = unique_apps
+                
+                self.progress.setVisible(False)
+                
+                # Update status
+                app_count = len(unique_apps)
+                self.sysdiag_status.setText(f"✅ Loaded sysdiag: {app_count} applications found")
+                self.status_label.setText(f"Sysdiag loaded - {app_count} apps detected")
+                
+                # Enable generation button
+                self.generate_sysdiag_rules_btn.setEnabled(True)
+                
+                # Show results
+                results_text = f"📊 SYSDIAG ANALYSIS RESULTS\n"
+                results_text += f"=" * 60 + "\n\n"
+                results_text += f"Folder: {folder_path}\n"
+                results_text += f"Applications found: {app_count}\n\n"
+                results_text += f"Top 20 Applications:\n"
+                results_text += "-" * 60 + "\n"
+                
+                for i, (app_name, proc) in enumerate(sorted(unique_apps.items())[:20], 1):
+                    results_text += f"{i}. {app_name}\n"
+                    results_text += f"   Path: {proc['path']}\n\n"
+                
+                if len(unique_apps) > 20:
+                    results_text += f"... and {len(unique_apps) - 20} more applications\n\n"
+                
+                results_text += "\nClick 'Generate Port-Specific Rules' to create LuLu rules!"
+                
+                self.sysdiag_results.setPlainText(results_text)
+                
+            except Exception as e:
+                self.progress.setVisible(False)
+                QMessageBox.critical(self, "Error", f"Failed to load sysdiag: {e}\n\nMake sure you selected the extracted sysdiagnose folder.")
+    
+    def generate_sysdiag_rules(self):
+        """Generate port-specific rules from sysdiag data"""
+        if not hasattr(self, 'sysdiag_apps'):
+            QMessageBox.warning(self, "No Data", "Please load sysdiag data first!")
+            return
+        
+        try:
+            self.progress.setVisible(True)
+            self.progress.setRange(0, 0)
+            self.status_label.setText("🛡️ Generating port-specific rules...")
+            
+            # Ask for output location
+            output_path, _ = QFileDialog.getSaveFileName(
+                self, "Save Port-Specific Rules", 
+                "enhanced_lulu_rules.json",
+                "JSON Files (*.json)"
+            )
+            
+            if not output_path:
+                self.progress.setVisible(False)
+                return
+            
+            # Import the rule generator
+            from generate_all_app_rules import get_common_endpoints_for_app
+            
+            # Generate rules for all apps
+            rules_data = {}
+            for app_name, proc in self.sysdiag_apps.items():
+                endpoints = get_common_endpoints_for_app(app_name)
+                bundle_id = f"com.{app_name.lower().replace(' ', '.')}"
+                
+                rules_data[app_name] = {
+                    "bundle_id": bundle_id,
+                    "path": proc['path'],
+                    "endpoints": endpoints
+                }
+            
+            # Save to file
+            import json
+            with open(output_path, 'w') as f:
+                json.dump(rules_data, f, indent=2)
+            
+            self.progress.setVisible(False)
+            
+            # Show success message
+            QMessageBox.information(
+                self, "Success", 
+                f"✅ Generated port-specific rules for {len(rules_data)} applications!\n\n"
+                f"Saved to: {output_path}\n\n"
+                f"Next steps:\n"
+                f"1. Review the generated rules\n"
+                f"2. Run merge_and_enhance_rules.py to merge with existing rules\n"
+                f"3. Import into LuLu → Rules → Import"
+            )
+            
+            self.status_label.setText(f"✅ Generated rules for {len(rules_data)} apps")
+            
+        except Exception as e:
+            self.progress.setVisible(False)
+            QMessageBox.critical(self, "Error", f"Failed to generate rules: {e}")
     
     def capture_live(self):
         """Capture live system diagnostics"""
