@@ -174,6 +174,8 @@ def main():
             "name": "Windsurf",
             "endpoints": [
                 ("*", "*", False, "0"),  # BLOCK all (LuLu inverts: 0→BLOCK)
+                ("127.0.0.1", "*", False, "1"),  # ALLOW localhost (IPC between components)
+                ("localhost", "*", False, "1"),  # ALLOW localhost by name
                 ("*.github.com", "*", True, "1"),  # ALLOW GitHub (LuLu inverts: 1→ALLOW)
                 ("*.githubusercontent.com", "*", True, "1"),
                 ("vscode.dev", "*", False, "1"),  # VSCode auth
@@ -213,7 +215,7 @@ def main():
     print()
     
     # Save
-    output_path = "enhanced_lulu_rules-v14-GITHUB-AUTH.json"
+    output_path = "enhanced_lulu_rules-v15-LOCALHOST.json"
     with open(output_path, 'w') as f:
         json.dump(enhanced_rules, f, indent=2)
     
