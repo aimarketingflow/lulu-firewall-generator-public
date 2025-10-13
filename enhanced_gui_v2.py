@@ -235,31 +235,17 @@ class EnhancedFirewallGUI(QMainWindow):
         diag_layout = QVBoxLayout(diag_group)
         
         diag_btn_layout = QHBoxLayout()
-        load_btn = QPushButton("📁 Load Spindump")
+        
+        # Simplified buttons
+        load_btn = QPushButton("📂 Load")
         load_btn.clicked.connect(self.load_diagnostics)
+        load_btn.setToolTip("Load spindump file or sysdiag folder")
         diag_btn_layout.addWidget(load_btn)
         
-        # New: Sysdiagnose button
-        sysdiag_btn = QPushButton("🔬 Sysdiagnose")
-        sysdiag_btn.clicked.connect(self.capture_sysdiagnose)
-        sysdiag_btn.setToolTip("Generate comprehensive system diagnostics (2-5 min)")
-        diag_btn_layout.addWidget(sysdiag_btn)
-        
-        live_btn = QPushButton("🔴 Live Capture")
+        live_btn = QPushButton("🔴 Live")
         live_btn.clicked.connect(self.capture_live)
+        live_btn.setToolTip("Capture live system diagnostics")
         diag_btn_layout.addWidget(live_btn)
-        
-        # Scan existing rules button
-        scan_rules_btn = QPushButton("🔍 Scan Rules")
-        scan_rules_btn.clicked.connect(self.scan_existing_rules)
-        scan_rules_btn.setToolTip("Scan existing Murus/Lulu rules to learn blocked processes")
-        diag_btn_layout.addWidget(scan_rules_btn)
-        
-        # NEW: System Monitor button
-        monitor_btn = QPushButton("📊 System Monitor")
-        monitor_btn.clicked.connect(self.launch_system_monitor)
-        monitor_btn.setToolTip("Launch real-time system resource monitor")
-        diag_btn_layout.addWidget(monitor_btn)
         
         diag_layout.addLayout(diag_btn_layout)
         
