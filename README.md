@@ -1,24 +1,30 @@
 # LuLu Custom Firewall Generator
 
-🛡️ **A powerful macOS firewall rule generator for LuLu and Murus firewalls**
+🛡️ **Automated port-specific firewall rules for macOS**
 
-Generate surgical, app-based firewall rules to allow only the applications you trust while blocking potential data exfiltration vectors.
+**The Problem:** LuLu creates wildcard rules (`ALLOW *:*`) when you click "Allow" - meaning apps can connect anywhere.
+
+**Our Solution:** Analyze system diagnostics → Generate specific endpoint rules → 95% attack surface reduction.
+
+**Result:** Apps limited to discovered endpoints only, not unlimited network access.
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Platform](https://img.shields.io/badge/platform-macOS-lightgrey.svg)
 ![Python](https://img.shields.io/badge/python-3.8+-blue.svg)
 
 > **📖 [Read the full story](about.html)** - Learn how and why this tool was created from a real-world security investigation
+> 
+> **🔍 [How LuLu Works](HOW_LULU_WORKS.md)** - Understanding LuLu's wildcard behavior and why our tool is necessary
 
 ---
 
-## 🌟 Features
+## 🌟 Key Features
 
-- **🎯 Surgical Precision**: Allow specific apps while blocking everything else
-- **🔒 Dual Mode Operation**: 
-  - **Online Mode**: Selective internet access for chosen apps
-  - **Offline Mode**: Complete air-gapped security (blocks all internet)
-- **🌐 Port-Specific Rules**: Generate rules with specific IPs/ports for 90% attack surface reduction
+- **🎯 Replaces Wildcards with Specific Endpoints**: LuLu's `*:*` → Our `github.com:443`
+- **📊 Automated Discovery**: Extract endpoints from sysdiagnose (no manual analysis)
+- **🛡️ Default-Deny Security**: BLOCK `*:*` + ALLOW specific endpoints only
+- **🔄 Two-Phase Protection**: Permissive startup → Restrictive runtime
+- **🌐 Port-Specific Rules**: 90-95% attack surface reduction vs manual LuLu
 - **📊 Live System Monitoring**: Capture and analyze running processes in real-time
 - **🔍 Sysdiag Parser**: Extract 40+ connections from system diagnostics automatically
 - **🛠️ App-Specific Templates**: Pre-configured rules for Safari, Windsurf, Slack, Mail
