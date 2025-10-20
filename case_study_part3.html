@@ -1,0 +1,179 @@
+            <!-- Section 3: The Journey -->
+            <div class="section" id="journey">
+                <h2>3. The Journey: From Rule Generator to Adaptive System</h2>
+                
+                <h3>Iteration 1: Static Rule Generation</h3>
+                
+                <p>
+                    The first approach was straightforward: Analyze system diagnostics (<code>sysdiagnose</code>) 
+                    to discover what connections apps actually make, then generate specific rules.
+                </p>
+                
+                <pre><code># Extract connections from diagnostics
+connections = parse_sysdiagnose(folder)
+
+# Generate rules
+for app, endpoints in connections.items():
+    create_rule(app, endpoints)
+
+# Export to LuLu format
+export_rules("lulu_rules.json")</code></pre>
+                
+                <div class="info">
+                    <strong>Pros:</strong> Better than wildcards, automated discovery
+                    <br><strong>Cons:</strong> Still static, required manual sysdiagnose capture
+                </div>
+                
+                <h3>Iteration 2: Smart Merging</h3>
+                
+                <p>
+                    We added intelligence to merge discovered endpoints with existing rules, deduplicate, 
+                    and optimize for specific apps like Windsurf.
+                </p>
+                
+                <pre><code># Load existing rules
+existing = load_lulu_rules()
+
+# Discover new endpoints
+discovered = discover_from_sysdiagnose()
+
+# Smart merge
+merged = smart_merge(existing, discovered)
+
+# Add known endpoints for specific apps
+if "windsurf" in app_name:
+    add_endpoints([
+        "github.com:443",
+        "api.codeium.com:443",
+        "server.self-serve.windsurf.com:443"
+    ])</code></pre>
+                
+                <div class="highlight">
+                    <strong>The Problem:</strong> We were hardcoding endpoints. Every app update broke our rules. 
+                    We were playing whack-a-mole with endpoints.
+                </div>
+                
+                <h3>Iteration 3: Two-Phase Protection</h3>
+                
+                <p>
+                    We realized apps need different access during startup vs runtime. So we created two rule sets:
+                </p>
+                
+                <ul style="margin-left: 40px; margin-bottom: 20px;">
+                    <li><strong>Phase 1 (Startup):</strong> Permissive rules for authentication, updates, initialization</li>
+                    <li><strong>Phase 2 (Runtime):</strong> Restrictive rules for normal operation</li>
+                </ul>
+                
+                <div class="danger">
+                    <strong>The Problem:</strong> How do you know when startup ends and runtime begins? 
+                    Manual switching defeats the purpose of automation.
+                </div>
+                
+                <h3>Iteration 4: Learning Mode</h3>
+                
+                <p>
+                    Instead of guessing endpoints, we built a learning mode: Monitor an app during use, 
+                    capture ALL connections, generate rules from actual behavior.
+                </p>
+                
+                <pre><code># Start learning mode
+start_monitoring(app_name="Windsurf", duration=300)
+
+# User launches app and uses it normally
+# Daemon captures every connection
+
+# Generate rules from captured data
+rules = generate_from_captured_connections()
+export_to_lulu(rules)</code></pre>
+                
+                <div class="info">
+                    <strong>Progress:</strong> This was better! Rules based on real behavior, not guesses.
+                    <br><strong>But:</strong> Still required a learning session. Still created static rules.
+                </div>
+                
+                <h3>The Moment of Clarity</h3>
+                
+                <p>
+                    During testing, I needed to install a Python package. The firewall blocked it. 
+                    I manually allowed GitHub, Python, and curl. The install worked. Then I had to 
+                    manually go back and block them again.
+                </p>
+                
+                <p>
+                    And I thought: <strong>"Why am I doing this manually? The computer knows I'm installing 
+                    a package. It knows what's needed. It knows when it's done. Why can't it just... handle it?"</strong>
+                </p>
+                
+                <div class="success">
+                    <strong>The Breakthrough Insight:</strong> We don't need better static rules. 
+                    We need a firewall that understands what the user is doing and adapts in real-time.
+                </div>
+                
+                <h3>Iteration 5: The Adaptive System</h3>
+                
+                <p>
+                    What if the firewall could:
+                </p>
+                
+                <ol style="margin-left: 40px; margin-bottom: 20px;">
+                    <li>Detect when you run <code>pip install</code></li>
+                    <li>Know that pip needs PyPI and GitHub</li>
+                    <li>Temporarily allow those specific endpoints</li>
+                    <li>Monitor the pip process</li>
+                    <li>Re-block the instant pip completes</li>
+                </ol>
+                
+                <p>
+                    No clicking. No wildcards. No forgetting. Just automatic, contextual security.
+                </p>
+                
+                <div class="highlight">
+                    <strong>This was the goal we didn't know we had.</strong> We started trying to make 
+                    static rules easier. We ended up building something that doesn't need static rules at all.
+                </div>
+                
+                <h3>The Development Timeline</h3>
+                
+                <table class="comparison-table">
+                    <thead>
+                        <tr>
+                            <th>Phase</th>
+                            <th>Approach</th>
+                            <th>Result</th>
+                            <th>Lesson Learned</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Week 1</strong></td>
+                            <td>Static rule generator</td>
+                            <td>Better than wildcards</td>
+                            <td>Still too manual</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Week 2</strong></td>
+                            <td>Smart merging + hardcoded endpoints</td>
+                            <td>Works for specific apps</td>
+                            <td>Doesn't scale</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Week 3</strong></td>
+                            <td>Two-phase protection</td>
+                            <td>Handles startup vs runtime</td>
+                            <td>Manual phase switching</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Week 4</strong></td>
+                            <td>Learning mode</td>
+                            <td>Rules from real behavior</td>
+                            <td>Still static after learning</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Tonight</strong></td>
+                            <td>Adaptive real-time system</td>
+                            <td class="good">✅ WORKS PERFECTLY</td>
+                            <td class="good">Context is everything</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>

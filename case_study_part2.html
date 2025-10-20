@@ -1,0 +1,148 @@
+            <!-- Section 2: The Problem -->
+            <div class="section" id="problem">
+                <h2>2. The Problem: Static Rules in a Dynamic World</h2>
+                
+                <h3>The Firewall Dilemma</h3>
+                
+                <p>
+                    Modern applications are complex. A single app like Windsurf (a code editor) might need 
+                    to connect to:
+                </p>
+                
+                <ul style="margin-left: 40px; margin-bottom: 20px;">
+                    <li>GitHub for authentication and repository access</li>
+                    <li>PyPI for Python package installation</li>
+                    <li>npm registry for JavaScript packages</li>
+                    <li>AI services for code completion</li>
+                    <li>Update servers for software updates</li>
+                    <li>Telemetry endpoints for analytics</li>
+                    <li>CDNs for content delivery</li>
+                </ul>
+                
+                <p>
+                    Traditional firewalls force you into one of three bad choices:
+                </p>
+                
+                <table class="comparison-table">
+                    <thead>
+                        <tr>
+                            <th>Approach</th>
+                            <th>Security</th>
+                            <th>Functionality</th>
+                            <th>User Experience</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Block Everything</strong></td>
+                            <td class="good">✅ Maximum</td>
+                            <td class="bad">❌ Nothing works</td>
+                            <td class="bad">❌ Terrible</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Allow Everything</strong></td>
+                            <td class="bad">❌ Zero</td>
+                            <td class="good">✅ Everything works</td>
+                            <td class="good">✅ Perfect</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Manual Rules</strong></td>
+                            <td class="bad">❌ Wildcards (*:*)</td>
+                            <td class="good">✅ Works eventually</td>
+                            <td class="bad">❌ Click hell</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <h3>The Wildcard Problem</h3>
+                
+                <p>
+                    When you click "Allow" on most firewalls (including LuLu), they create a wildcard rule:
+                </p>
+                
+                <pre><code>{
+  "app": "GitHub Desktop",
+  "endpoint": "*:*",
+  "action": "ALLOW"
+}</code></pre>
+                
+                <p>
+                    This means: <strong>GitHub Desktop can now connect to ANY IP address on ANY port, forever.</strong>
+                </p>
+                
+                <div class="danger">
+                    <strong>Security Implications:</strong>
+                    <ul style="margin-left: 20px; margin-top: 10px;">
+                        <li>If GitHub Desktop is compromised, attackers have unlimited network access</li>
+                        <li>Malware can exfiltrate data through the allowed app</li>
+                        <li>No visibility into what connections are actually being made</li>
+                        <li>The rule persists forever (you'll forget it exists)</li>
+                    </ul>
+                </div>
+                
+                <h3>The Manual Management Nightmare</h3>
+                
+                <p>
+                    Let's walk through a real scenario that happened during this project:
+                </p>
+                
+                <div class="info">
+                    <strong>Scenario:</strong> Installing a Python package in Windsurf IDE
+                </div>
+                
+                <p><strong>Step 1:</strong> Run <code>pip install requests</code></p>
+                
+                <p><strong>Step 2:</strong> Firewall blocks GitHub</p>
+                <pre><code>🚫 BLOCKED: Windsurf → github.com:443</code></pre>
+                
+                <p>You click "Allow" → Creates <code>GitHub:*:*</code> wildcard</p>
+                
+                <p><strong>Step 3:</strong> Firewall blocks Python</p>
+                <pre><code>🚫 BLOCKED: Windsurf → python3</code></pre>
+                
+                <p>You click "Allow" → Creates <code>Python3:*:*</code> wildcard</p>
+                
+                <p><strong>Step 4:</strong> Firewall blocks PyPI</p>
+                <pre><code>🚫 BLOCKED: pip → pypi.org:443</code></pre>
+                
+                <p>You click "Allow" → Creates <code>pip:*:*</code> wildcard</p>
+                
+                <p><strong>Step 5:</strong> Firewall blocks curl</p>
+                <pre><code>🚫 BLOCKED: pip → curl</code></pre>
+                
+                <p>You click "Allow" → Creates <code>curl:*:*</code> wildcard</p>
+                
+                <p><strong>Step 6:</strong> Package finally installs (5 minutes later)</p>
+                
+                <p><strong>Step 7:</strong> You're supposed to go back and remove all those rules...</p>
+                
+                <div class="danger">
+                    <strong>Reality Check:</strong> You won't. You'll forget. Those wildcards will stay there forever.
+                </div>
+                
+                <h3>The Time & Security Cost</h3>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="number">20+</div>
+                        <div class="label">Manual clicks per day</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="number">5 min</div>
+                        <div class="label">Per install workflow</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="number">50%</div>
+                        <div class="label">Times you forget to re-block</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="number">∞</div>
+                        <div class="label">Attack surface with wildcards</div>
+                    </div>
+                </div>
+                
+                <p>
+                    <strong>The bottom line:</strong> Static firewalls force you to choose between security 
+                    and productivity. We needed a third option.
+                </p>
+            </div>
