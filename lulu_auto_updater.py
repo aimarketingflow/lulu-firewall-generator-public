@@ -12,6 +12,7 @@ import json
 import time
 import subprocess
 import plistlib
+import threading
 from pathlib import Path
 from datetime import datetime, timedelta
 from collections import defaultdict
@@ -28,11 +29,12 @@ class LuLuAutoUpdater:
         # Track temporary rules
         self.temp_rules = {}  # {rule_id: expiry_time}
         self.detected_actions = []
+        self.action_cooldowns = {}  # {action_name: last_trigger_time}
         
-        # Action patterns
+        # Action patterns (ONLY package installs, not git)
         self.action_patterns = {
             'python_install': {
-                'processes': ['pip', 'pip3', 'python', 'python3'],
+                'processes': ['pip', 'pip3'],  # Only pip, not python (too broad)
                 'parent_apps': ['Windsurf', 'VSCode', 'PyCharm'],
                 'endpoints': [
                     ('pypi.org', '443'),
@@ -51,17 +53,8 @@ class LuLuAutoUpdater:
                     ('raw.githubusercontent.com', '443')
                 ],
                 'duration': 300
-            },
-            'git_clone': {
-                'processes': ['git'],
-                'parent_apps': ['Windsurf', 'VSCode', 'Terminal'],
-                'endpoints': [
-                    ('github.com', '443'),
-                    ('gitlab.com', '443'),
-                    ('bitbucket.org', '443')
-                ],
-                'duration': 180
             }
+            # Removed git_clone - too noisy, Windsurf runs git constantly
         }
     
     def log(self, message, level="INFO"):
@@ -112,7 +105,8 @@ class LuLuAutoUpdater:
         
         try:
             with open(self.lulu_rules_path, 'rb') as f:
-                return plistlib.load(f)
+                # Use fmt=plistlib.FMT_XML to handle UIDs
+                return plistlib.load(f, fmt=plistlib.FMT_XML)
         except Exception as e:
             self.log(f"Error reading LuLu rules: {e}", "ERROR")
             return {}
@@ -123,7 +117,8 @@ class LuLuAutoUpdater:
             # Write to temp file first
             temp_file = self.backup_dir / "rules_temp.plist"
             with open(temp_file, 'wb') as f:
-                plistlib.dump(rules, f)
+                # Use XML format to avoid UID issues
+                plistlib.dump(rules, f, fmt=plistlib.FMT_XML)
             
             # Copy to LuLu location with sudo
             subprocess.run(
@@ -157,6 +152,79 @@ class LuLuAutoUpdater:
             self.log("Restarted LuLu", "INFO")
         except Exception as e:
             self.log(f"Error restarting LuLu: {e}", "WARNING")
+    
+    def temporarily_disable_blocks(self, process_names, duration):
+        """Temporarily disable BLOCK rules for specific processes (github, curl, python3)"""
+        self.log(f"🔓 Temporarily disabling BLOCK rules for: {', '.join(process_names)}", "INFO")
+        
+        # Read current rules
+        rules = self.read_lulu_rules()
+        
+        disabled_rules = []
+        
+        # Find and disable BLOCK rules for these processes
+        for key in list(rules.keys()):
+            # Check if this key matches our process names
+            for proc_name in process_names:
+                if proc_name.lower() in key.lower():
+                    # Store the original rules
+                    original_rules = rules[key].copy() if key in rules else []
+                    
+                    # Remove BLOCK rules (action = 0 in JSON, which LuLu shows as BLOCK)
+                    rules[key] = [r for r in rules[key] if r.get('action') != '0']
+                    
+                    disabled_rules.append({
+                        'key': key,
+                        'original_rules': original_rules,
+                        'process': proc_name
+                    })
+                    
+                    self.log(f"  🔓 Disabled BLOCK rules for: {key}", "SUCCESS")
+        
+        # Write modified rules
+        if self.write_lulu_rules(rules):
+            # Track for re-enabling
+            rule_id = f"disabled:{datetime.now().timestamp()}"
+            expiry = datetime.now() + timedelta(seconds=duration)
+            
+            self.temp_rules[rule_id] = {
+                'type': 'disabled_blocks',
+                'disabled_rules': disabled_rules,
+                'expiry': expiry
+            }
+            
+            self.log(f"✅ Disabled {len(disabled_rules)} BLOCK rules (will re-enable in {duration}s)", "SUCCESS")
+            return rule_id
+        
+        return None
+    
+    def re_enable_blocks(self, rule_id):
+        """Re-enable previously disabled BLOCK rules"""
+        if rule_id not in self.temp_rules:
+            return
+        
+        rule_info = self.temp_rules[rule_id]
+        if rule_info.get('type') != 'disabled_blocks':
+            return
+        
+        self.log(f"🔒 Re-enabling BLOCK rules...", "INFO")
+        
+        # Read current rules
+        rules = self.read_lulu_rules()
+        
+        # Restore original rules
+        for disabled in rule_info['disabled_rules']:
+            key = disabled['key']
+            rules[key] = disabled['original_rules']
+            self.log(f"  🔒 Re-enabled BLOCK rules for: {key}", "SUCCESS")
+        
+        # Write rules
+        self.write_lulu_rules(rules)
+        
+        # Remove from tracking
+        del self.temp_rules[rule_id]
+        
+        self.log(f"✅ BLOCK rules re-enabled", "SUCCESS")
     
     def add_temporary_rule(self, app_name, endpoint, port, duration):
         """Add a temporary allow rule to LuLu"""
@@ -210,11 +278,17 @@ class LuLuAutoUpdater:
         return False
     
     def remove_temporary_rule(self, rule_id):
-        """Remove a temporary rule"""
+        """Remove a temporary rule or re-enable blocks"""
         if rule_id not in self.temp_rules:
             return
         
         rule_info = self.temp_rules[rule_id]
+        
+        # Check if this is a disabled_blocks entry
+        if rule_info.get('type') == 'disabled_blocks':
+            self.re_enable_blocks(rule_id)
+            return
+        
         self.log(f"Removing temporary rule: {rule_info['endpoint']}:{rule_info['port']}", "INFO")
         
         # Read current rules
@@ -291,16 +365,42 @@ class LuLuAutoUpdater:
                                 parent_name = parent_result.stdout.strip()
                                 
                                 # Check if parent matches
+                                found_app = None
                                 for app in pattern['parent_apps']:
                                     if app.lower() in parent_name.lower():
-                                        self.handle_detection(
-                                            action_name,
-                                            app,
-                                            name,
-                                            pid,
-                                            pattern
-                                        )
+                                        found_app = app
                                         break
+                                
+                                # If not found, check grandparent (for terminal processes)
+                                if not found_app:
+                                    gp_result = subprocess.run(
+                                        ['ps', '-p', ppid, '-o', 'ppid='],
+                                        capture_output=True,
+                                        text=True
+                                    )
+                                    if gp_result.returncode == 0:
+                                        gpid = gp_result.stdout.strip()
+                                        ggp_result = subprocess.run(
+                                            ['ps', '-p', gpid, '-o', 'comm='],
+                                            capture_output=True,
+                                            text=True
+                                        )
+                                        ggp_name = ggp_result.stdout.strip()
+                                        
+                                        for app in pattern['parent_apps']:
+                                            if app.lower() in ggp_name.lower():
+                                                found_app = app
+                                                break
+                                
+                                if found_app:
+                                    self.handle_detection(
+                                        action_name,
+                                        found_app,
+                                        name,
+                                        pid,
+                                        pattern
+                                    )
+                                    break
                 
                 # Cleanup expired rules
                 self.cleanup_expired_rules()
@@ -313,9 +413,28 @@ class LuLuAutoUpdater:
     
     def handle_detection(self, action_name, app_name, process_name, pid, pattern):
         """Handle detected action"""
+        # Check cooldown - don't re-trigger same action within 60 seconds
+        now = datetime.now()
+        cooldown_key = f"{action_name}:{app_name}"
+        
+        if cooldown_key in self.action_cooldowns:
+            last_trigger = self.action_cooldowns[cooldown_key]
+            if (now - last_trigger).total_seconds() < 60:
+                # Still in cooldown, skip
+                return
+        
+        self.action_cooldowns[cooldown_key] = now
+        
         self.log(f"🎯 DETECTED: {action_name} - {app_name} spawned {process_name} (PID: {pid})", "DETECT")
         
-        # Add temporary rules for all endpoints
+        # FIRST: Disable BLOCK rules for the processes that need to run
+        disable_rule_id = None
+        if action_name == 'python_install':
+            disable_rule_id = self.temporarily_disable_blocks(['python', 'python3', 'pip', 'pip3', 'curl'], pattern['duration'])
+        elif action_name == 'npm_install':
+            disable_rule_id = self.temporarily_disable_blocks(['npm', 'yarn', 'pnpm', 'node', 'curl'], pattern['duration'])
+        
+        # SECOND: Add specific ALLOW rules for the endpoints
         for endpoint, port in pattern['endpoints']:
             self.add_temporary_rule(
                 app_name,
@@ -324,6 +443,15 @@ class LuLuAutoUpdater:
                 pattern['duration']
             )
         
+        # THIRD: Start monitoring process completion for early cleanup
+        self.log(f"👁️  Monitoring PID {pid} for completion...", "INFO")
+        monitor_thread = threading.Thread(
+            target=self._monitor_process_for_cleanup,
+            args=(pid, disable_rule_id),
+            daemon=True
+        )
+        monitor_thread.start()
+        
         self.detected_actions.append({
             'action': action_name,
             'app': app_name,
@@ -331,6 +459,35 @@ class LuLuAutoUpdater:
             'pid': pid,
             'timestamp': datetime.now().isoformat()
         })
+    
+    def _monitor_process_for_cleanup(self, pid, disable_rule_id):
+        """Monitor process and cleanup immediately when it completes"""
+        start_time = time.time()
+        
+        try:
+            # Poll until process completes
+            while True:
+                result = subprocess.run(
+                    ['ps', '-p', str(pid)],
+                    capture_output=True
+                )
+                
+                if result.returncode != 0:
+                    # Process completed!
+                    elapsed = time.time() - start_time
+                    self.log(f"✅ Process {pid} completed after {elapsed:.1f}s", "SUCCESS")
+                    
+                    # Immediately re-enable blocks
+                    if disable_rule_id and disable_rule_id in self.temp_rules:
+                        self.log(f"🔒 EARLY CLEANUP: Re-enabling blocks immediately", "SUCCESS")
+                        self.re_enable_blocks(disable_rule_id)
+                    
+                    break
+                
+                time.sleep(0.5)  # Check every half second
+                
+        except Exception as e:
+            self.log(f"Error monitoring process: {e}", "ERROR")
     
     def cleanup_all_temp_rules(self):
         """Remove all temporary rules"""
